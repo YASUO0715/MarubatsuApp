@@ -3,34 +3,37 @@
 //  MarubatsuApp
 //
 //  Created by Yasuo Niihori on 2021/11/06.
-//
+
 
 import UIKit
 
 class ViewController: UIViewController {
     
+    @IBAction func goNext(_ sender: Any) {
+        
+        // ①storyboardのインスタンス取得
+        let storyboard: UIStoryboard = self.storyboard!
+        
+        // ②遷移先ViewControllerのインスタンス取得
+        let nextView = storyboard.instantiateViewController(withIdentifier: "Create") as! CreateViewController
+        
+        // ③画面遷移
+        self.present(nextView, animated: true, completion: nil)
+    }
+    
     @IBOutlet weak var questionLabel: UILabel!
     
     var currentQuestionNum: Int = 0
+    var questions: [[String: Any]] = []
     
-    let questions: [[String: Any]] = [
-        [
-            "question": "iPhoneアプリを開発する統合環境はZcodeである",
-            "answer": false
-        ],
-        [
-            "question": "Xcode画面の右側にはユーティリティーズがある",
-            "answer": true
-        ],
-        [
-            "question": "UILabelは文字列を表示する際に利用する",
-            "answer": true
-        ]
-    ]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        let userDefaults = UserDefaults.standard
+        if userDefaults.object(forKey: "add") != nil{
+            questions = userDefaults.object(forKey: "add") as! [[String: Any]]
+        }
         showQuestion()
     }
     
@@ -43,46 +46,49 @@ class ViewController: UIViewController {
     }
     
     func showQuestion() {
-        let question = questions[currentQuestionNum]
-        
-        if let que = question["question"] as? String {
-            questionLabel.text = que
+        if questions.isEmpty == true {
+            questionLabel.text = "問題がありません。作成してください"
+        } else {
+            let question = questions[currentQuestionNum]
+            
+            if let que = question["question"] as? String {
+                questionLabel.text = que
+            }
         }
     }
     
     func showAlert(message: String) {
-            let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
-            let close = UIAlertAction(title: "閉じる", style: .cancel, handler: nil)
-            alert.addAction(close)
-            present(alert, animated: true, completion: nil)
-        }
-    
-    func checkAnswer(yourAnswer: Bool) {
-        
-        let question = questions[currentQuestionNum]
-        
-        if let ans = question["answer"] as? Bool {
-            
-            if yourAnswer == ans {
-                // 正解
-                // currentQuestionNumを1足して次の問題に進む
-                currentQuestionNum += 1
-                showAlert(message: "正解！")
-            } else {
-                // 不正解
-                showAlert(message: "不正解…")
-                
-            }
-        } else {
-            print("答えが入ってません")
-            return
-        }
-        if currentQuestionNum >= questions.count {
-            currentQuestionNum = 0
-        }
-        showQuestion()
-        
+        let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        let close = UIAlertAction(title: "閉じる", style: .cancel, handler: nil)
+        alert.addAction(close)
+        present(alert, animated: true, completion: nil)
     }
     
+    func checkAnswer(yourAnswer: Bool) {
+        if questions.isEmpty == true {
+            
+        } else {
+            let question = questions[currentQuestionNum]
+            
+            if let ans = question["answer"] as? Bool {
+                if yourAnswer == ans {
+                    currentQuestionNum += 1
+                    showAlert(message: "正解！")
+                } else {
+                    showAlert(message: "不正解…")
+                }
+            } else {
+                print("答えが入ってません")
+                return
+            }
+            
+            if currentQuestionNum >= questions.count {
+                currentQuestionNum = 0
+            }
+            
+            showQuestion()
+        }
+    }
     
 }
+
